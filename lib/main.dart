@@ -9,41 +9,40 @@ void main() async {
   runApp(const MeteoApp());
 }
 
-// Modèle de données retourné par l'API
 class WeatherData {
-  final String ville;
+  final String city;
   final double temperature;
   final String condition;
-  final double humidite;
-  final double vent;
-  final double pression;
-  final double ressenti;
-  final double visibilite;
-  final String pays;
+  final double humidity;
+  final double wind;
+  final double pressure;
+  final double feelsLike;
+  final double visibility;
+  final String country;
 
   const WeatherData({
-    required this.ville,
+    required this.city,
     required this.temperature,
     required this.condition,
-    required this.humidite,
-    required this.vent,
-    required this.pression,
-    required this.ressenti,
-    required this.visibilite,
-    required this.pays,
+    required this.humidity,
+    required this.wind,
+    required this.pressure,
+    required this.feelsLike,
+    required this.visibility,
+    required this.country,
   });
 
   factory WeatherData.fromJson(Map<String, dynamic> json) {
     return WeatherData(
-      ville: json['location']['name'] as String,
-      pays: json['location']['country'] as String,
+      city: json['location']['name'] as String,
+      country: json['location']['country'] as String,
       temperature: (json['current']['temp_c'] as num).toDouble(),
       condition: json['current']['condition']['text'] as String,
-      humidite: (json['current']['humidity'] as num).toDouble(),
-      vent: (json['current']['wind_kph'] as num).toDouble(),
-      pression: (json['current']['pressure_mb'] as num).toDouble(),
-      ressenti: (json['current']['feelslike_c'] as num).toDouble(),
-      visibilite: (json['current']['vis_km'] as num).toDouble(),
+      humidity: (json['current']['humidity'] as num).toDouble(),
+      wind: (json['current']['wind_kph'] as num).toDouble(),
+      pressure: (json['current']['pressure_mb'] as num).toDouble(),
+      feelsLike: (json['current']['feelslike_c'] as num).toDouble(),
+      visibility: (json['current']['vis_km'] as num).toDouble(),
     );
   }
 }
@@ -58,7 +57,7 @@ Future<WeatherData> fetchWeather(String city) async {
     return WeatherData.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
   } else {
     final body = jsonDecode(response.body) as Map<String, dynamic>;
-    final message = body['error']?['message'] ?? 'Erreur inconnue';
+    final message = body['error']?['message'] ?? 'Unknown error';
     throw Exception(message);
   }
 }
@@ -83,7 +82,7 @@ class MeteoPage extends StatefulWidget {
   State<MeteoPage> createState() => _MeteoPageState();
 }
 
-IconData _iconeMeteo(String condition) {
+IconData _weatherIcon(String condition) {
   final c = condition.toLowerCase();
   if (c.contains('soleil') || c.contains('ensoleill') || c.contains('clair')) {
     return Icons.wb_sunny;
@@ -101,16 +100,16 @@ IconData _iconeMeteo(String condition) {
   return Icons.wb_cloudy;
 }
 
-Color _couleurFond(String condition) {
+Color _backgroundColor(String condition) {
   final c = condition.toLowerCase();
   if (c.contains('soleil') || c.contains('ensoleill') || c.contains('clair')) {
     return const Color(0xFFE3F2FD);
   } else if (c.contains('pluie') || c.contains('averse') || c.contains('bruine') || c.contains('pluvieux')) {
-    return const Color(0xFFB0BEC5); 
+    return const Color(0xFFB0BEC5);
   } else if (c.contains('neige') || c.contains('grésil') || c.contains('verglas')) {
     return const Color(0xFFE0F7FA);
   } else if (c.contains('orage') || c.contains('tonnerre')) {
-    return const Color(0xFF78909C); 
+    return const Color(0xFF78909C);
   } else if (c.contains('nuage') || c.contains('nuageux') || c.contains('couvert') ||
              c.contains('brouillard') || c.contains('brume')) {
     return const Color(0xFFCFD8DC);
@@ -123,7 +122,7 @@ class _MeteoPageState extends State<MeteoPage> {
 
   WeatherData? _weather;
   bool _isLoading = false;
-  String? _erreur;
+  String? _error;
 
   @override
   void dispose() {
@@ -131,30 +130,30 @@ class _MeteoPageState extends State<MeteoPage> {
     super.dispose();
   }
 
-  Future<void> _rechercher() async {
-    final ville = _controller.text.trim();
-    if (ville.isEmpty) return;
+  Future<void> _search() async {
+    final city = _controller.text.trim();
+    if (city.isEmpty) return;
 
     setState(() {
       _isLoading = true;
-      _erreur = null;
+      _error = null;
     });
 
     try {
-      final data = await fetchWeather(ville);
+      final data = await fetchWeather(city);
       setState(() {
         _weather = data;
         _isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _erreur = e.toString().replaceFirst('Exception: ', '');
+        _error = e.toString().replaceFirst('Exception: ', '');
         _isLoading = false;
       });
     }
   }
 
-  Future<void> _voirDetails() async {
+  Future<void> _showDetails() async {
     if (_weather == null) return;
     final String? message = await Navigator.push<String>(
       context,
@@ -171,9 +170,9 @@ class _MeteoPageState extends State<MeteoPage> {
 
   @override
   Widget build(BuildContext context) {
-    final couleur = _weather != null ? _couleurFond(_weather!.condition) : const Color(0xFFE3F2FD);
+    final color = _weather != null ? _backgroundColor(_weather!.condition) : const Color(0xFFE3F2FD);
     return Scaffold(
-      backgroundColor: couleur,
+      backgroundColor: color,
       appBar: AppBar(
         title: const Text(
           'Météo',
@@ -193,7 +192,7 @@ class _MeteoPageState extends State<MeteoPage> {
                   child: TextField(
                     controller: _controller,
                     textInputAction: TextInputAction.search,
-                    onSubmitted: (_) => _rechercher(),
+                    onSubmitted: (_) => _search(),
                     decoration: InputDecoration(
                       hintText: 'Entrez une ville…',
                       prefixIcon: const Icon(Icons.search),
@@ -205,7 +204,7 @@ class _MeteoPageState extends State<MeteoPage> {
                 ),
                 const SizedBox(width: 12),
                 ElevatedButton(
-                  onPressed: _rechercher,
+                  onPressed: _search,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
                     foregroundColor: Colors.white,
@@ -225,7 +224,7 @@ class _MeteoPageState extends State<MeteoPage> {
             const SizedBox(height: 32),
 
             Expanded(
-              child: _buildContenu(),
+              child: _buildContent(),
             ),
           ],
         ),
@@ -233,12 +232,12 @@ class _MeteoPageState extends State<MeteoPage> {
     );
   }
 
-  Widget _buildContenu() {
+  Widget _buildContent() {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_erreur != null) {
+    if (_error != null) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -246,7 +245,7 @@ class _MeteoPageState extends State<MeteoPage> {
             const Icon(Icons.error_outline, size: 64, color: Colors.redAccent),
             const SizedBox(height: 16),
             Text(
-              _erreur!,
+              _error!,
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 16, color: Colors.redAccent),
             ),
@@ -275,7 +274,6 @@ class _MeteoPageState extends State<MeteoPage> {
     final w = _weather!;
     return Column(
       children: [
-        // Carte météo principale
         Card(
           elevation: 8,
           shape: RoundedRectangleBorder(
@@ -287,7 +285,7 @@ class _MeteoPageState extends State<MeteoPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  w.ville,
+                  w.city,
                   style: const TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
@@ -295,12 +293,12 @@ class _MeteoPageState extends State<MeteoPage> {
                   ),
                 ),
                 Text(
-                  w.pays,
+                  w.country,
                   style: const TextStyle(fontSize: 14, color: Colors.grey),
                 ),
                 const SizedBox(height: 16),
                 Icon(
-                  _iconeMeteo(w.condition),
+                  _weatherIcon(w.condition),
                   size: 72,
                   color: Colors.blueAccent,
                 ),
@@ -329,11 +327,10 @@ class _MeteoPageState extends State<MeteoPage> {
 
         const SizedBox(height: 24),
 
-        // Bouton "Voir les détails"
         SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
-            onPressed: _voirDetails,
+            onPressed: _showDetails,
             icon: const Icon(Icons.info_outline),
             label: const Text('Voir les détails'),
             style: ElevatedButton.styleFrom(

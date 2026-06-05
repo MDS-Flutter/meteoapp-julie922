@@ -10,17 +10,16 @@ class WeatherDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(weather.ville),
+        title: Text(weather.city),
         centerTitle: true,
         backgroundColor: Colors.blueAccent,
-        foregroundColor: Colors.white,    
+        foregroundColor: Colors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Carte principale
             Card(
               elevation: 6,
               shape: RoundedRectangleBorder(
@@ -31,14 +30,14 @@ class WeatherDetailPage extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      weather.ville,
+                      weather.city,
                       style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
-                      weather.pays,
+                      weather.country,
                       style: const TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                     const SizedBox(height: 12),
@@ -77,37 +76,36 @@ class WeatherDetailPage extends StatelessWidget {
             const SizedBox(height: 12),
 
             _DetailRow(
-              icone: Icons.thermostat,
+              icon: Icons.thermostat,
               label: 'Ressenti',
-              valeur: '${weather.ressenti.toStringAsFixed(1)}°C',
+              value: '${weather.feelsLike.toStringAsFixed(1)}°C',
             ),
             _DetailRow(
-              icone: Icons.water_drop,
+              icon: Icons.water_drop,
               label: 'Humidité',
-              valeur: '${weather.humidite.toStringAsFixed(0)} %',
+              value: '${weather.humidity.toStringAsFixed(0)} %',
             ),
             _DetailRow(
-              icone: Icons.air,
+              icon: Icons.air,
               label: 'Vent',
-              valeur: '${weather.vent.toStringAsFixed(1)} km/h',
+              value: '${weather.wind.toStringAsFixed(1)} km/h',
             ),
             _DetailRow(
-              icone: Icons.compress,
+              icon: Icons.compress,
               label: 'Pression',
-              valeur: '${weather.pression.toStringAsFixed(0)} hPa',
+              value: '${weather.pressure.toStringAsFixed(0)} hPa',
             ),
             _DetailRow(
-              icone: Icons.visibility,
+              icon: Icons.visibility,
               label: 'Visibilité',
-              valeur: '${weather.visibilite.toStringAsFixed(1)} km',
+              value: '${weather.visibility.toStringAsFixed(1)} km',
             ),
 
             const Spacer(),
 
-            // Bouton "Ajouter aux favoris" (bonus)
             ElevatedButton.icon(
               onPressed: () {
-                Navigator.pop(context, '${weather.ville} ajouté aux favoris !');
+                Navigator.pop(context, '${weather.city} ajouté aux favoris !');
               },
               icon: const Icon(Icons.favorite),
               label: const Text('Ajouter aux favoris'),
@@ -128,14 +126,14 @@ class WeatherDetailPage extends StatelessWidget {
 }
 
 class _DetailRow extends StatelessWidget {
-  final IconData icone;
+  final IconData icon;
   final String label;
-  final String valeur;
+  final String value;
 
   const _DetailRow({
-    required this.icone,
+    required this.icon,
     required this.label,
-    required this.valeur,
+    required this.value,
   });
 
   @override
@@ -144,12 +142,12 @@ class _DetailRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Icon(icone, color: Colors.blueAccent, size: 22),
+          Icon(icon, color: Colors.blueAccent, size: 22),
           const SizedBox(width: 12),
           Text(label, style: const TextStyle(fontSize: 16)),
           const Spacer(),
           Text(
-            valeur,
+            value,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
